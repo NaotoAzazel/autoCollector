@@ -1,51 +1,49 @@
 import pyautogui
-import keyboard as keyb
+from Utils import getSettings
 import time
-from settingGui import getSettings
 
-state="К запуску готов!"
 
-def hotKey():
-  keyb.add_hotkey(getSettings().get("bindStartButton"), lambda: startBot())
-
-  i = 0
-  while(i == 0):
-    if keyb.is_pressed(getSettings().get("bindEndButton")):
-      print("Stop button was clicked")
-      i = 1
-      stopBot()
-
-def stopBot():
-  pass
+state = {0: "Готов к запуску!", 1: "Открываю меню", 2: "Выбираю \"награды\"", 3: "Выбираю \"Ежедневные награды\"", 4: "Забираю мульти кейс", 5: "Закрываю меню", 6: "Жду 5 минут до следующего цикла", 7: "Забираю новогодний кейс"}
+counter = 0
+saveBack = 0
 
 def startBot():
+  global counter, saveBack
   while(True):
     #Открывает меню, выбирает награды
-    state="Открываю меню"
-    # keyb.press_and_release("tab")
-    state="Выбираю \"награды\""
+    counter += 1
+    keyb.press_and_release("tab")
+    counter += 1
     pyautogui.moveTo(1200, 35, duration=1)
-    # pyautogui.click(clicks=1, interval=0.5)
+    pyautogui.click(clicks=1, interval=0.5)
 
     #Выбирает ежедневные награды
-    state="Выбираю \"Ежедневные награды\""
+    counter += 1
     pyautogui.moveTo(187, 107, duration=1)
-    # pyautogui.click(clicks=1, interval=0.5)
+    pyautogui.click(clicks=1, interval=0.5)
 
     #Забирает мульти кейс
-    state="Забираю мульти кейс"
+    counter += 1
     pyautogui.moveTo(825, 325, duration=1)
-    # pyautogui.click(clicks=1, interval=0.5)
+    pyautogui.click(clicks=1, interval=0.5)
+
+    saveBack = counter
 
     #Забирает новогодний кейс, если указал пользователь
     if getSettings().get("isSecondBox"):
-      state="Забираю новогодний кейс"
       pyautogui.moveTo(1720, 325, duration=1)
-      # pyautogui.click(clicks=1, interval=0.5)
+      counter = 7
+      pyautogui.click(clicks=1, interval=0.5)
+
+    counter = saveBack
 
     #Закрывает меню
-    state="Закрываю меню"
-    # keyb.press_and_release("tab")
-  
-    state="Жду 5 минут до следующего цикла"
+    counter += 1
+    keyb.press_and_release("tab")
+
+    # state="Жду 5 минут до следующего цикла"
+    counter += 1
     time.sleep(300) #Ждем 5 минут
+    counter = 0
+
+

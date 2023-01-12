@@ -1,71 +1,63 @@
-from tkinter import *
+import customtkinter
 import keyboard as keyb
-import pyautogui
-import time
-from keybind import KeyBinder
+import Utils
+import Bot
 
-root = Tk()
+customtkinter.set_appearance_mode("Dark")
+customtkinter.set_default_color_theme("green")
 
-def bind():
-  start = bindStartBtn.get()        
-  end = bindEndBtn.get()
-  print(start, end)
+def changeText():
+  statusBar.configure(text=Bot.state[Bot.counter])
+  root.after(500, changeText)
 
-  keyb.add_hotkey(start, lambda: startBot())
+def settingsGui():
+  window = customtkinter.CTkToplevel(root)
 
-  iTrue = 0
+  window.geometry("400x270")
+  window.title("Settings")
 
-  while iTrue == 0 :
-    if keyb.is_pressed(end):
-      print('Нажата клавиша выхода из программы')
-      iTrue = 1
-      exit(0)
+  frame = customtkinter.CTkFrame(master=window)
+  frame.pack(pady=20, padx=60, fill="both", expand=True)
 
-def startBot():
-  while(True):
-    #Открывает меню, выбирает награды
-    keyb.press_and_release("tab")
-    pyautogui.moveTo(1200, 35, duration=1)
-    pyautogui.click(clicks=1, interval=0.5)
+  label = customtkinter.CTkLabel(master=frame, text="Кнопка для запуска").pack()
 
-    #Выбирает ежедневные награды
-    pyautogui.moveTo(187, 107, duration=1)
-    pyautogui.click(clicks=1, interval=0.5)
+  bindStartBtn = customtkinter.CTkEntry(master=frame, placeholder_text="Кнопка для запуска")
+  bindStartBtn.pack(padx=12, pady=10)
+  bindStartBtn.insert(0, Utils.getSettings().get("bindStartButton"))
 
-    #Забирает мульти кейс 
-    pyautogui.moveTo(825, 325, duration=1)
-    pyautogui.click(clicks=1, interval=0.5)
+  label2 = customtkinter.CTkLabel(master=frame, text="Кнопка для завершения").pack()
 
-    #Забирает новогодний кейс
-    # pyautogui.moveTo(1720, 325, duration=1)
-    # pyautogui.click(clicks=1, interval=0.5)
+  bindEndBtn= customtkinter.CTkEntry(master=frame, placeholder_text="Кнопка для завершения")
+  bindEndBtn.insert(0, Utils.getSettings().get("bindEndButton"))
+  bindEndBtn.pack(padx=12, pady=10)
 
-    #Закрывает меню
-    keyb.press_and_release("tab")
+  index = customtkinter.BooleanVar(value=Utils.getSettings().get("isSecondBox"))
+  isSecondBox = customtkinter.CTkCheckBox(master=frame, text="Забирать новогодний кейс", variable=index, onvalue=True, offvalue=False).pack()
 
-    time.sleep(300) #Ждем 5 минут
+  applyBtn = customtkinter.CTkButton(master=frame, text="Сохранить изменения", command=lambda: Utils.applyChanges(window, bindStartBtn.get(), bindEndBtn.get(), index.get()))
+  applyBtn.pack(padx=12, pady=10)
 
-#Окно проложения
-root["bg"] = "#252525"
+  window.mainloop()
+
+root = customtkinter.CTk()
+
+root.geometry("300x100")
+root.attributes("-topmost", True)
 root.title("AutoCollector")
-root.wm_attributes("-alpha", 1)
-root.geometry("300x300")
 
-root.resizable(width=False, height=False)
+frame = customtkinter.CTkFrame(master=root)
+frame.pack(pady=10, padx=30, fill="both", expand=True)
 
-canvas = Canvas(root, height=300, width=300)
-canvas.pack()
+statusBar = customtkinter.CTkLabel(master=frame, text="Status")
+statusBar.pack(pady=0, padx=0)
 
-frame = Frame(root, bg="#252525")
-frame.place(relx=0.15, rely=0.15, relwidth=0.7, relheight=0.7)
+startBtn = customtkinter.CTkButton(master=frame, text="Start", width=10, command= lambda: keyb.add_hotkey(Utils.getSettings().get("bindStartButton"), lambda: Bot.startBot()))
+startBtn.pack(pady=0, padx=0)
+startBtn.place(x=180, y=40)
 
-startBotBtn = Button(frame, text="Start bot", bg="green", font=40, command=bind)
-startBotBtn.pack()
+settingBtn = customtkinter.CTkButton(master=frame, text="⚙", width=10, command=settingsGui, fg_color="gray")
+settingBtn.pack(pady=0, padx=0)
+settingBtn.place(x=140, y=40)
 
-bindStartBtn = Entry(frame, bg="white")
-bindStartBtn.pack()
-
-bindEndBtn = Entry(frame, bg="white")
-bindEndBtn.pack()
-
+changeText()
 root.mainloop()
